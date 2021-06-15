@@ -8,6 +8,7 @@ import org.springframework.amqp.core.BindingBuilder;
 import org.springframework.amqp.core.DirectExchange;
 import org.springframework.amqp.core.FanoutExchange;
 import org.springframework.amqp.core.Queue;
+import org.springframework.amqp.core.TopicExchange;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -49,6 +50,20 @@ public class RabbitMQ {
         amqpAdmin.declareBinding(BindingBuilder.bind(queue1).to(fanoutExchange));
         amqpAdmin.declareBinding(BindingBuilder.bind(queue2).to(fanoutExchange));
 
+        Queue queue3 = new Queue("teste.fila.topic.1", true, false, false, arguments);
+        amqpAdmin.declareQueue(queue3);
+        Queue queue4 = new Queue("teste.fila.topic.2", true, false, false, arguments);
+        amqpAdmin.declareQueue(queue4);
+        TopicExchange topicExchange = new TopicExchange("teste.exchange.topic");
+        amqpAdmin.declareExchange(topicExchange);
+        amqpAdmin.declareBinding(BindingBuilder.bind(queue3).to(topicExchange).with("*.orange.*"));
+        amqpAdmin.declareBinding(BindingBuilder.bind(queue4).to(topicExchange).with("lazy.#"));
+
+        Queue queue5 = new Queue("teste.fila.rpc", true, false, false, arguments);
+        amqpAdmin.declareQueue(queue5);
+        DirectExchange directExchange2 = new DirectExchange("teste.exchange.direct.rpc");
+        amqpAdmin.declareExchange(directExchange2);
+        amqpAdmin.declareBinding(BindingBuilder.bind(queue5).to(directExchange2).with("rpc"));
     }
 
     public RabbitTemplate getRabbitTemplate() {
